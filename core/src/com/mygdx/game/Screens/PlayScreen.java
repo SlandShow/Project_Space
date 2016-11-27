@@ -21,15 +21,17 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.game.GameLogic.GameLoader;
+import com.mygdx.game.GameLogic.GameState;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Scenes.Hud;
 import com.mygdx.game.Sprites.Player;
+import com.mygdx.game.Tools.B2WorldCreater;
 
 
-/**
- * Created by Admin on 16.11.2016.
- */
-public class PlayScreen implements Screen {
+/* This class - element of GameState. It`s first level of the game */
+// TODO: RENAME THIS CLASS. FROM "PlayScene" TO "FirstLevelScene"
+public class PlayScreen extends GameState{
 
     private MyGdxGame game;
     Texture texture;
@@ -48,8 +50,8 @@ public class PlayScreen implements Screen {
     private RayHandler rayHandlerh;
 
 
-    public PlayScreen(MyGdxGame game) {
-        this.game = game;
+    public PlayScreen() {
+
         texture = new Texture("badlogic.jpg");
         gameCam = new OrthographicCamera();
         gamePort = new FitViewport(
@@ -59,7 +61,7 @@ public class PlayScreen implements Screen {
 
         // load map
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("maps/d.tmx");
+        map = mapLoader.load("maps/Gortiven.tmx");
         render = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
         gameCam.position.set(
                 gamePort.getWorldWidth() / 2,
@@ -69,77 +71,16 @@ public class PlayScreen implements Screen {
         // physics and polygon system
         world = new World(new Vector2(0, -10), true);
         b2dr = new Box2DDebugRenderer();
-
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-        Body body;
-
-       // create ground bodies/fixtures (polygon)
-       for (MapObject obj :
-                map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(
-                    (rect.getX() + rect.getWidth() / 2) / MyGdxGame.PPM,
-                    (rect.getY() + rect.getHeight() / 2) / MyGdxGame.PPM);
-            body = world.createBody(bdef);
-
-            shape.setAsBox(rect.getWidth() / 2 / MyGdxGame.PPM, rect.getHeight() / 2 / MyGdxGame.PPM);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
- /*
-        // create pipe bodies
-        for (MapObject obj :
-                map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(
-                    (rect.getX() + rect.getWidth() / 2) / MyGdxGame.PPM,
-                    (rect.getY() + rect.getHeight() / 2) / MyGdxGame.PPM);
-            body = world.createBody(bdef);
-
-            shape.setAsBox(rect.getWidth() / 2 / MyGdxGame.PPM, rect.getHeight() / 2 / MyGdxGame.PPM);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
-
-        // create bricks
-        for (MapObject obj :
-                map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(
-                    (rect.getX() + rect.getWidth() / 2) / MyGdxGame.PPM,
-                    (rect.getY() + rect.getHeight() / 2) / MyGdxGame.PPM);
-            body = world.createBody(bdef);
-
-            shape.setAsBox(rect.getWidth() / 2 / MyGdxGame.PPM, rect.getHeight() / 2 / MyGdxGame.PPM);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
-
-        // create coins
-        for (MapObject obj :
-                map.getLayers().get(4).getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(
-                    (rect.getX() + rect.getWidth() / 2) / MyGdxGame.PPM,
-                    (rect.getY() + rect.getHeight() / 2) / MyGdxGame.PPM);
-            body = world.createBody(bdef);
-
-            shape.setAsBox(rect.getWidth() / 2 / MyGdxGame.PPM, rect.getHeight() / 2 / MyGdxGame.PPM);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }*/
+        new B2WorldCreater(world, map); // create polygons around the map
         player = new Player(world); // create player
+
+
+        
 
 
     }
 
-
+    @Override
     public void handleInput(float dt) {
         // jumping
         if (Gdx.input.isKeyJustPressed(Input.Keys.UP))
@@ -156,8 +97,18 @@ public class PlayScreen implements Screen {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
                 player.b2body.getLinearVelocity().x >= -2)
             player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
+
+
+        // escape button - game on pause
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            GameLoader.currentIndex = GameLoader.MENU_PAUSE_STATE;
+            GameLoader.gameLoader.addState(new MenuPauseScene());
+            GameLoader.gameLoader.setNewState();
+        }
+
     }
 
+    @Override
     public void update(float dt) {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
@@ -190,7 +141,7 @@ public class PlayScreen implements Screen {
         b2dr.render(world, gameCam.combined);
 
         // set batch to draw camera
-        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        MyGdxGame.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
 
     }
@@ -217,6 +168,10 @@ public class PlayScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        map.dispose();
+        render.dispose();
+        world.dispose();
+        b2dr.dispose();
+        hud.dispose();
     }
 }

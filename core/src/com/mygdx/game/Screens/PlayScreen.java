@@ -1,5 +1,6 @@
 package com.mygdx.game.Screens;
 
+import box2dLight.PointLight;
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -8,7 +9,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -25,7 +26,9 @@ import com.mygdx.game.GameLogic.GameLoader;
 import com.mygdx.game.GameLogic.GameState;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Scenes.Hud;
+import com.mygdx.game.Sprites.Enemy;
 import com.mygdx.game.Sprites.Player;
+import com.mygdx.game.Sprites.SimpleEnemy;
 import com.mygdx.game.Tools.B2WorldCreater;
 
 
@@ -44,6 +47,7 @@ public class PlayScreen extends GameState{
     private World world;
     private Box2DDebugRenderer b2dr;
     private Player player;
+    private Enemy enemy;
 
     // light
     private PointLight light;
@@ -69,13 +73,22 @@ public class PlayScreen extends GameState{
                 2);
 
         // physics and polygon system
+
         world = new World(new Vector2(0, -10), true);
         b2dr = new Box2DDebugRenderer();
         new B2WorldCreater(world, map); // create polygons around the map
+
         player = new Player(world); // create player
 
+        rayHandlerh = new RayHandler(world);
+        rayHandlerh.setAmbientLight(.5f);
+        light = new PointLight(rayHandlerh, 100, Color.ORANGE, 1.45f, 30 / 300, 30);
+        light.attachToBody(player.getB2body());
+        light.setXray(false);
 
-        
+
+
+
 
 
     }
@@ -117,6 +130,9 @@ public class PlayScreen extends GameState{
         gameCam.update();
         render.setView(gameCam);
 
+        rayHandlerh.update();
+        //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
+        light.setXray(false);
     }
 
     @Override
@@ -143,6 +159,9 @@ public class PlayScreen extends GameState{
         // set batch to draw camera
         MyGdxGame.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
+
+        // light system update
+        rayHandlerh.render();
 
     }
 
@@ -173,5 +192,6 @@ public class PlayScreen extends GameState{
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        rayHandlerh.dispose();
     }
 }

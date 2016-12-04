@@ -80,11 +80,14 @@ public class PlayScreen extends GameState{
 
         player = new Player(world); // create player
 
+        // make light
         rayHandlerh = new RayHandler(world);
         rayHandlerh.setAmbientLight(.5f);
-        light = new PointLight(rayHandlerh, 100, Color.ORANGE, 1.45f, 30 / 300, 30);
+        light = new PointLight(rayHandlerh, 100, Color.ORANGE, 2.45f, player.b2body.getPosition().x / MyGdxGame.PPM, player.b2body.getPosition().y / MyGdxGame.PPM);
         light.attachToBody(player.getB2body());
         light.setXray(false);
+
+
 
 
 
@@ -133,6 +136,7 @@ public class PlayScreen extends GameState{
         rayHandlerh.update();
         //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
         light.setXray(false);
+        light.setPosition(player.getX(), player.getY());
     }
 
     @Override

@@ -4,9 +4,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.physics.box2d.*;
 import com.mygdx.game.MyGdxGame;
 
-/**
- * Created by Admin on 16.11.2016.
- */
 public class Player extends Sprite {
 
     public World world;
@@ -21,7 +18,7 @@ public class Player extends Sprite {
     // create player
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(32 / MyGdxGame.PPM, 40);
+        bdef.position.set(32 / MyGdxGame.PPM, 200 / MyGdxGame.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
@@ -34,4 +31,7 @@ public class Player extends Sprite {
 
     }
 
+    public Body getB2body() {
+        return b2body;
+    }
 }

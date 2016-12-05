@@ -134,7 +134,7 @@ public class PlayScreen extends GameState{
         gameCam.update();
         render.setView(gameCam);
 
-        rayHandlerh.update();
+        rayHandlerh.updateAndRender();
         //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
         light.setXray(false);
         light.setPosition(player.getX() , (MyGdxGame.V_HEIGHT - 100)/MyGdxGame.PPM); // солнце "следует" за игроком

@@ -31,6 +31,7 @@ public class Player extends Sprite {
 
     }
 
+    // для реализации света
     public Body getB2body() {
         return b2body;
     }

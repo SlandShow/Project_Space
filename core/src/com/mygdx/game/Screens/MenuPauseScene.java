@@ -42,7 +42,7 @@ public class MenuPauseScene extends GameState {
 
         // draw menu
         MyGdxGame.batch.begin();
-        font.draw(MyGdxGame.batch, "Game on Pause", 250, 250);
+        font.draw(MyGdxGame.batch, "Game on Pause", (MyGdxGame.V_WIDTH / 2), (MyGdxGame.V_HEIGHT / 2));
         MyGdxGame.batch.end();
 
     }
@@ -69,7 +69,7 @@ public class MenuPauseScene extends GameState {
 
     @Override
     public void dispose() {
-
+        font.dispose();
     }
 
     @Override
@@ -85,6 +85,10 @@ public class MenuPauseScene extends GameState {
 
         // go to game menu
         if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+
+            Gdx.gl.glClearColor(0, 0, 0, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
             GameLoader.currentIndex = GameLoader.MENU_STATE;
             GameLoader.gameLoader.setNewState();
         }

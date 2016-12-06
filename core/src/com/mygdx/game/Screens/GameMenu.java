@@ -21,7 +21,7 @@ public class GameMenu extends GameState {
         load = GameLoader.gameLoader;
         font = new BitmapFont();
         cam = new OrthographicCamera();
-       // cam.position.set(50, 50, 2);
+        // cam.position.set(50, 50, 2);
 
     }
 
@@ -30,6 +30,11 @@ public class GameMenu extends GameState {
     public void handleInput(float dt) {
         // TODO: MAKE NORMAL MENU WITH BUTTONS!
         if (Gdx.input.isTouched()) {
+
+            // чистим экран
+           // Gdx.gl.glClearColor(0, 0, 0, 1);
+            //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
             GameLoader.currentIndex = GameLoader.LVL_1;
             load.addState(new PlayScreen());
             load.setNewState();
@@ -61,7 +66,7 @@ public class GameMenu extends GameState {
         // draw menu
 
         MyGdxGame.batch.begin();
-        font.draw(MyGdxGame.batch, "Tap anywhere to begin", 250, 250);
+        font.draw(MyGdxGame.batch, "Tap anywhere to begin", (MyGdxGame.V_WIDTH / 2), (MyGdxGame.V_HEIGHT / 2) );
         MyGdxGame.batch.end();
 
     }
@@ -88,6 +93,6 @@ public class GameMenu extends GameState {
 
     @Override
     public void dispose() {
-
+        font.dispose();
     }
 }

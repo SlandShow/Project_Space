@@ -80,7 +80,7 @@ public class PlayScreen extends GameState {
                 2);
 
         // для рисования
-        batch = new SpriteBatch();
+        batch = MyGdxGame.batch;
 
         // physics and polygon system
         world = new World(new Vector2(0, -10), true);
@@ -166,7 +166,7 @@ public class PlayScreen extends GameState {
         rayHandlerh.updateAndRender();
         //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
         light.setXray(false);
-        light.setPosition(player.b2body.getPosition().x / MyGdxGame.PPM, player.b2body.getPosition().y / MyGdxGame.PPM); // солнце "следует" за игроком
+        light.setPosition(player.b2body.getPosition().x / MyGdxGame.PPM, player.b2body.getPosition().y / MyGdxGame.PPM ); // свет"следует" за игроком
 
         // обновление позиции игрока и проч.
         player.update(dt);
@@ -195,24 +195,22 @@ public class PlayScreen extends GameState {
 
         // render game map
         render.render();
+        render.setView(gameCam);
 
 
         // render box2dbodies
         b2dr.render(world, gameCam.combined);
 
-        // set batch to draw camera
-        MyGdxGame.batch.setProjectionMatrix(hud.stage.getCamera().combined);
-        hud.stage.draw();
 
-        MyGdxGame.batch.setProjectionMatrix(gameCam.combined);
+
         batch.begin();
         player.render(batch, delta);
         batch.end();
 
-        
 
-
-
+       // set batch to draw camera
+        batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        hud.stage.draw();
 
 
         // light system update

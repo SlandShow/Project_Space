@@ -21,7 +21,7 @@ public class Player extends Sprite {
 
     public World world;
     public Body b2body;
-    private SpriteBatch batch;
+    public SpriteBatch batch;
 
     // для анимации
     Animation bobLeft;
@@ -93,6 +93,9 @@ public class Player extends Sprite {
     // create player
     public void definePlayer() {
 
+
+        batch = new SpriteBatch();
+
         // физика
         velocity = new Vector2();
         position = new Vector2();
@@ -104,7 +107,7 @@ public class Player extends Sprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(5 / MyGdxGame.PPM);
+        shape.setRadius(25 / MyGdxGame.PPM);
 
         fdef.shape = shape;
         b2body.createFixture(fdef);
@@ -136,33 +139,37 @@ public class Player extends Sprite {
 
         stayAnimation = new Animation(0.5f, stayFrames);
 
+
     }
 
     public void render(SpriteBatch batch, float dt) {
+
+       // batch.begin();
+
+        // анимация
         stateTime += Gdx.graphics.getDeltaTime();
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
+            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
         }
 
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
+            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
+            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
         }
 
         if (isJump) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
+            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
         }
 
-
-
+        //batch.end();
         //batch.draw(anim.getKeyFrame(0, loop), b2body.getPosition().x - 20 / MyGdxGame.PPM, b2body.getPosition().y - 10 / MyGdxGame.PPM, 0.5f, 0.5f);
 
     }
@@ -170,7 +177,8 @@ public class Player extends Sprite {
 
     public void update(float dt) {
 
-        setPosition((b2body.getPosition().x - getWidth() / 2 ) *1, (b2body.getPosition().y - getHeight() / 2 ) * MyGdxGame.PPM);
+        setPosition((b2body.getPosition().x - getWidth() / 2), (b2body.getPosition().y - getHeight() / 2) * MyGdxGame.PPM);
+
     }
 
     public void setJump(boolean b) {

@@ -109,23 +109,7 @@ public class Player extends Sprite {
         fdef.shape = shape;
         b2body.createFixture(fdef);
 
-
-        // animation
-        Texture bobTexture = new Texture(Gdx.files.internal("sprites/player/walk/bob.png"));
-        TextureRegion[] split = new TextureRegion(bobTexture).split(20, 20)[0];
-        TextureRegion[] mirror = new TextureRegion(bobTexture).split(20, 20)[0];
-
-        bobRight = new Animation(0.1f, split[0], split[1]);
-        bobLeft = new Animation(0.1f, mirror[0], mirror[1]);
-
-        bobJumpRight = new Animation(0.1f, split[2], split[3]);
-        bobJumpLeft = new Animation(0.1f, mirror[2], mirror[3]);
-
-        bobIdleRight = new Animation(0.5f, split[0], split[4]);
-        bobIdleLeft = new Animation(0.5f, mirror[0], mirror[4]);
-
-        bobDead = new Animation(0.2f, split[0]);
-
+        
         // инициализация спрайтовой анимации
         walkSheet = new Texture(Gdx.files.internal("sprites/player/walk/Hero2.png"));
         TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);

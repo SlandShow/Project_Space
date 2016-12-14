@@ -109,7 +109,7 @@ public class Player extends Sprite {
         fdef.shape = shape;
         b2body.createFixture(fdef);
 
-        
+
         // инициализация спрайтовой анимации
         walkSheet = new Texture(Gdx.files.internal("sprites/player/walk/Hero2.png"));
         TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);
@@ -143,22 +143,22 @@ public class Player extends Sprite {
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() , getY() );
+            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
         }
 
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() , getY() );
+            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() , getY() );
+            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
         }
 
         if (isJump) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, getX() , getY() );
+            batch.draw(currentFrame, getX() + 170 , getY() + 0, 300f, 300f );
         }
 
 
@@ -170,7 +170,7 @@ public class Player extends Sprite {
 
     public void update(float dt) {
 
-        setPosition((b2body.getPosition().x - getWidth() / 2 ), (b2body.getPosition().y - getHeight() / 2 ));
+        setPosition((b2body.getPosition().x - getWidth() / 2 ) *1, (b2body.getPosition().y - getHeight() / 2 ) * MyGdxGame.PPM);
     }
 
     public void setJump(boolean b) {

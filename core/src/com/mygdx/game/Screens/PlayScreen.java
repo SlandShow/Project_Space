@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -34,7 +36,7 @@ import com.mygdx.game.Tools.B2WorldCreater;
 
 /* This class - element of GameState. It`s first level of the game */
 // TODO: RENAME THIS CLASS. FROM "PlayScene" TO "FirstLevelScene"
-public class PlayScreen extends GameState{
+public class PlayScreen extends GameState {
 
     private MyGdxGame game;
     Texture texture;
@@ -48,15 +50,20 @@ public class PlayScreen extends GameState{
     private Box2DDebugRenderer b2dr;
     private Player player;
     private Enemy enemy;
+    private Texture img;
+    private SpriteBatch batch;
 
-    // light
+    // light sky
     private PointLight light;
     private RayHandler rayHandlerh;
 
+    // player flash light
+    private PointLight flashLight;
+    private RayHandler flashHandler;
 
     public PlayScreen() {
 
-        texture = new Texture("badlogic.jpg");
+
         gameCam = new OrthographicCamera();
         gamePort = new FitViewport(
                 MyGdxGame.V_WIDTH / MyGdxGame.PPM,
@@ -65,56 +72,69 @@ public class PlayScreen extends GameState{
 
         // load map
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("maps/Gortiven.tmx");
+        map = mapLoader.load("maps/SpaceShipLevel.tmx");
         render = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
         gameCam.position.set(
                 gamePort.getWorldWidth() / 2,
                 gamePort.getWorldHeight() / 2,
                 2);
 
-        // physics and polygon system
+        // для рисования
+        batch = new SpriteBatch();
 
+        // physics and polygon system
         world = new World(new Vector2(0, -10), true);
         b2dr = new Box2DDebugRenderer();
         new B2WorldCreater(world, map); // create polygons around the map
 
-        player = new Player(world); // create player
+        player = new Player(world, this); // create player
+        player.setBatch(batch); // даем возможность рисовать
 
         // make light
         rayHandlerh = new RayHandler(world);
         rayHandlerh.setAmbientLight(.5f);
-        light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
-
-        //light.attachToBody(player.getB2body());
+        light = new PointLight(rayHandlerh, 200, Color.PURPLE, 0.35f, 10, 10); // light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
+       // light.attachToBody(player.getB2body());
         light.setXray(false);
-
-
-
-
-
-
 
 
     }
 
+    // public TextureAtlas getAtlas() {
+    //return atlas;
+    //}
+
     @Override
     public void handleInput(float dt) {
+
+        // do nothing
+        player.setStay(true);
+
         // jumping
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP))
-            player.b2body.applyLinearImpulse(
-                    new Vector2(0, 4f),
-                    player.b2body.getWorldCenter(),
-                    true);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) ) {
+            player.b2body.applyLinearImpulse(new Vector2(0, 4f) , player.b2body.getWorldCenter(), true);
+            player.setJump(true);
+            player.setStay(false);
+            light.setPosition( player.b2body.getLinearVelocity().x , player.b2body.getLinearVelocity().y );
+        }
         // turn right
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) &&
-                player.b2body.getLinearVelocity().x <= 2)
+                player.b2body.getLinearVelocity().x <= 2) {
             player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
-
+           // player.getVelocity().x += Player.SPEED;
+            player.setMoveRight(true);
+            player.setMoveleft(false);
+            player.setStay(false);
+        }
         // turn left
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
-                player.b2body.getLinearVelocity().x >= -2)
+                player.b2body.getLinearVelocity().x >= -2) {
             player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
-
+            //player.getVelocity().x =- Player.SPEED;
+            player.setMoveRight(false);
+            player.setMoveleft(true);
+            player.setStay(false);
+        }
 
         // escape button - game on pause
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
@@ -123,21 +143,39 @@ public class PlayScreen extends GameState{
             GameLoader.gameLoader.setNewState();
         }
 
+
     }
 
     @Override
     public void update(float dt) {
+
+        // обновление ввода
         handleInput(dt);
+
+        // корректируем время
         world.step(1 / 60f, 6, 2);
+
         // change camera position
         gameCam.position.x = player.b2body.getPosition().x;
         gameCam.update();
         render.setView(gameCam);
 
+
+
+        // обновление и рендеринг света
         rayHandlerh.updateAndRender();
         //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
         light.setXray(false);
-        light.setPosition(player.getX() , (MyGdxGame.V_HEIGHT - 100)/MyGdxGame.PPM); // солнце "следует" за игроком
+        light.setPosition(player.b2body.getPosition().x / MyGdxGame.PPM, player.b2body.getPosition().y / MyGdxGame.PPM); // солнце "следует" за игроком
+
+        // обновление позиции игрока и проч.
+        player.update(dt);
+
+        // обновление врага
+        for (Enemy enemy : B2WorldCreater.enemies)
+            enemy.update(dt);
+
+
     }
 
     @Override
@@ -149,14 +187,15 @@ public class PlayScreen extends GameState{
     public void render(float delta) {
 
         //
-        update(delta);
 
+        update(delta);
         // clear game screen
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // render game map
         render.render();
+
 
         // render box2dbodies
         b2dr.render(world, gameCam.combined);
@@ -165,8 +204,21 @@ public class PlayScreen extends GameState{
         MyGdxGame.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
 
+        MyGdxGame.batch.setProjectionMatrix(gameCam.combined);
+        batch.begin();
+        player.render(batch, delta);
+        batch.end();
+
+        
+
+
+
+
+
         // light system update
         rayHandlerh.render();
+
+
 
     }
 
@@ -198,5 +250,7 @@ public class PlayScreen extends GameState{
         b2dr.dispose();
         hud.dispose();
         rayHandlerh.dispose();
+        batch.dispose();
+
     }
 }

@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Texture;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -63,21 +64,22 @@ public class PlayScreen extends GameState {
 
     public PlayScreen() {
 
+        img = new Texture(Gdx.files.internal("sprites/player/stay/hero_stay.png"));
 
-        gameCam = new OrthographicCamera();
-        gamePort = new FitViewport(
-                MyGdxGame.V_WIDTH / MyGdxGame.PPM,
-                MyGdxGame.V_HEIGHT / MyGdxGame.PPM, gameCam);
-        hud = new Hud(game.batch);
+        // настройка ортографической камеры
+
+
+        gameCam = new OrthographicCamera(MyGdxGame.V_WIDTH / MyGdxGame.PPM * 2, MyGdxGame.V_HEIGHT / MyGdxGame.PPM * 2);
+        // gamePort = new FitViewport(
+        // MyGdxGame.V_WIDTH / MyGdxGame.PPM,
+        //  MyGdxGame.V_HEIGHT / MyGdxGame.PPM, gameCam);
+        // hud = new Hud(game.batch);
 
         // load map
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("maps/SpaceShipLevel.tmx");
         render = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
-        gameCam.position.set(
-                gamePort.getWorldWidth() / 2,
-                gamePort.getWorldHeight() / 2,
-                2);
+
 
         // для рисования
         batch = MyGdxGame.batch;
@@ -89,12 +91,17 @@ public class PlayScreen extends GameState {
 
         player = new Player(world, this); // create player
         player.setBatch(batch); // даем возможность рисовать
+        gameCam.position.set(
+                player.b2body.getPosition().x,
+                player.b2body.getPosition().y,
+                0);
+
 
         // make light
         rayHandlerh = new RayHandler(world);
         rayHandlerh.setAmbientLight(.5f);
-        light = new PointLight(rayHandlerh, 200, Color.PURPLE, 0.35f, 10, 10); // light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
-       // light.attachToBody(player.getB2body());
+        light = new PointLight(rayHandlerh, 1000, Color.PURPLE, 1f, 10, 10); // light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
+        // light.attachToBody(player.getB2body());
         light.setXray(false);
 
 
@@ -109,22 +116,27 @@ public class PlayScreen extends GameState {
 
         // do nothing
         player.setStay(true);
+        player.setMoveleft(false);
+        player.setMoveRight(false);
+        player.setJump(false);
 
         // jumping
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) ) {
-            player.b2body.applyLinearImpulse(new Vector2(0, 4f) , player.b2body.getWorldCenter(), true);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+            player.b2body.applyLinearImpulse(new Vector2(0, 4f), player.b2body.getWorldCenter(), true);
             player.setJump(true);
             player.setStay(false);
-            light.setPosition( player.b2body.getLinearVelocity().x , player.b2body.getLinearVelocity().y );
+
+            //light.setPosition( player.b2body.getLinearVelocity().x , player.b2body.getLinearVelocity().y );
         }
         // turn right
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) &&
                 player.b2body.getLinearVelocity().x <= 2) {
             player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
-           // player.getVelocity().x += Player.SPEED;
+            // player.getVelocity().x += Player.SPEED;
             player.setMoveRight(true);
             player.setMoveleft(false);
             player.setStay(false);
+          //  gameCam.translate(5 / MyGdxGame.PPM, 0, 0);
         }
         // turn left
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
@@ -134,6 +146,7 @@ public class PlayScreen extends GameState {
             player.setMoveRight(false);
             player.setMoveleft(true);
             player.setStay(false);
+           // gameCam.translate(-5 / MyGdxGame.PPM, 0, 0);
         }
 
         // escape button - game on pause
@@ -156,16 +169,14 @@ public class PlayScreen extends GameState {
         world.step(1 / 60f, 6, 2);
 
         // change camera position
-        gameCam.position.x = player.b2body.getPosition().x;
-        gameCam.update();
-        render.setView(gameCam);
+        //  gameCam.position.x = player.b2body.getPosition().x;
 
 
 
         // обновление и рендеринг света
         rayHandlerh.updateAndRender();
         light.setXray(false);
-        light.setPosition((player.b2body.getPosition().x ), (player.b2body.getPosition().y - player.getHeight() / 2) ); // свет"следует" за игроком
+        light.setPosition((player.b2body.getPosition().x - player.getWidth() / 2), (player.b2body.getPosition().y - player.getHeight() / 2)); // свет"следует" за игроком
 
         // обновление позиции игрока и проч.
         player.update(dt);
@@ -186,30 +197,36 @@ public class PlayScreen extends GameState {
     public void render(float delta) {
 
         //
-
         update(delta);
+
         // clear game screen
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+
+        gameCam.position.x = player.b2body.getPosition().x;
+        gameCam.update();
+        batch.setProjectionMatrix(gameCam.combined);
+        render.setView(gameCam);
+
 
         // render game map
         render.render();
         render.setView(gameCam);
 
 
-        // render box2dbodies - сделано для отладки Fixtures! 
+        // render box2dbodies - сделано для отладки Fixtures!
         b2dr.render(world, gameCam.combined);
 
 
-
+        // set batch to draw camera
+//        hud.stage.draw();
+       // текстура игрока
+        //batch.setProjectionMatrix(gameCam.combined);
         batch.begin();
         player.render(batch, delta);
+        //batch.draw(img, 0, 0);
         batch.end();
-
-
-       // set batch to draw camera
-        batch.setProjectionMatrix(hud.stage.getCamera().combined);
-        hud.stage.draw();
 
 
         // light system update
@@ -217,12 +234,11 @@ public class PlayScreen extends GameState {
         rayHandlerh.render();
 
 
-
     }
 
     @Override
     public void resize(int width, int height) {
-        gamePort.update(width, height);
+//        gamePort.update(width, height);
     }
 
     @Override

@@ -1,8 +1,6 @@
 package com.mygdx.game.Sprites;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -67,27 +65,21 @@ public class Player extends Sprite {
     }
 
     public Player(World world, PlayScreen screen) {
-        // super(screen.getAtlas().findRegion("sprites/player/walk/WalkAnimarion.png")); // !
         this.world = world;
         definePlayer();
-        // animationFrames = new TextureRegion(getTexture(), 0, 0, 22, 46);
-        // setBounds(0, 0, 22 / MyGdxGame.PPM, 46 / MyGdxGame.PPM);
-        // setRegion(animationFrames);
-
-
     }
 
 
     // create player
     public void definePlayer() {
 
-
-        batch = new SpriteBatch();
-
         // физика
         velocity = new Vector2();
         position = new Vector2();
 
+        // структура игрока на основе движка BOX2D
+
+        // часть 1
         BodyDef bdef = new BodyDef();
         bdef.position.set(80 / MyGdxGame.PPM, 200 / MyGdxGame.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -100,6 +92,15 @@ public class Player extends Sprite {
         fdef.shape = shape;
         b2body.createFixture(fdef);
 
+        // часть 2
+        bdef.position.set(100 / MyGdxGame.PPM, 190 / MyGdxGame.PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        b2body = world.createBody(bdef);
+
+        PolygonShape poly = new PolygonShape();
+        poly.setAsBox(18 / MyGdxGame.PPM, 25 / MyGdxGame.PPM);
+        fdef.shape = poly;
+        b2body.createFixture(fdef);
 
         // инициализация спрайтовой анимации
         walkSheet = new Texture(Gdx.files.internal("sprites/player/walk/Hero2.png"));
@@ -125,7 +126,10 @@ public class Player extends Sprite {
             }
         }
 
-        stayAnimation = new Animation(0.5f, stayFrames);
+        stayAnimation = new Animation(0.3f, stayFrames);
+
+
+
 
 
     }
@@ -137,32 +141,36 @@ public class Player extends Sprite {
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
+            //currentFrame.flip(true, false);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (isJump) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
+            batch.draw(currentFrame, (getX() - 0.8f  ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
+        System.out.println(moveleft + " " + moveRight + " " + stay);
 
+    }
 
+    public TextureRegion getTextureGame() {
+        return currentFrame;
     }
 
 
     public void update(float dt) {
-
-        setPosition((b2body.getPosition().x - getWidth() / 2), (b2body.getPosition().y - getHeight() / 2) * MyGdxGame.PPM);
+        setPosition((b2body.getPosition().x - getWidth() / 2)  , (b2body.getPosition().y - getHeight() / 2) );
 
     }
 

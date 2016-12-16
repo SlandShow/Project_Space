@@ -21,19 +21,9 @@ public class Player extends Sprite {
 
     public World world;
     public Body b2body;
-    public SpriteBatch batch;
+    private SpriteBatch batch;
 
     // для анимации
-    Animation bobLeft;
-    Animation bobRight;
-    Animation bobJumpLeft;
-    Animation bobJumpRight;
-    Animation bobIdleLeft;
-    Animation bobIdleRight;
-    Animation bobDead;
-    int[][] blocks;
-    TextureRegion tile;
-
     int FRAME_COLS = 2;
     int FRAME_ROWS = 2;
     Animation walkAnimation;
@@ -44,8 +34,6 @@ public class Player extends Sprite {
     Texture staySheet;
     TextureRegion[] stayFrames;
     float stateTime;
-    private TextureRegion walk1;
-    private TextureRegion walk2;
 
     // для физики движения
     private boolean moveRight;
@@ -144,8 +132,6 @@ public class Player extends Sprite {
 
     public void render(SpriteBatch batch, float dt) {
 
-       // batch.begin();
-
         // анимация
         stateTime += Gdx.graphics.getDeltaTime();
 
@@ -169,8 +155,7 @@ public class Player extends Sprite {
             batch.draw(currentFrame, (getX() + 110), getY() - 83, 180f, 180f);
         }
 
-        //batch.end();
-        //batch.draw(anim.getKeyFrame(0, loop), b2body.getPosition().x - 20 / MyGdxGame.PPM, b2body.getPosition().y - 10 / MyGdxGame.PPM, 0.5f, 0.5f);
+
 
     }
 

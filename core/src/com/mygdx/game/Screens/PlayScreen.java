@@ -164,9 +164,8 @@ public class PlayScreen extends GameState {
 
         // обновление и рендеринг света
         rayHandlerh.updateAndRender();
-        //rayHandlerh.setCombinedMatrix(gameCam.combined.cpy().scl(MyGdxGame.PPM));
         light.setXray(false);
-        light.setPosition(player.b2body.getPosition().x / MyGdxGame.PPM, player.b2body.getPosition().y / MyGdxGame.PPM ); // свет"следует" за игроком
+        light.setPosition((player.b2body.getPosition().x ), (player.b2body.getPosition().y - player.getHeight() / 2) ); // свет"следует" за игроком
 
         // обновление позиции игрока и проч.
         player.update(dt);
@@ -198,7 +197,7 @@ public class PlayScreen extends GameState {
         render.setView(gameCam);
 
 
-        // render box2dbodies
+        // render box2dbodies - сделано для отладки Fixtures! 
         b2dr.render(world, gameCam.combined);
 
 
@@ -214,6 +213,7 @@ public class PlayScreen extends GameState {
 
 
         // light system update
+        rayHandlerh.setCombinedMatrix(gameCam);
         rayHandlerh.render();
 
 

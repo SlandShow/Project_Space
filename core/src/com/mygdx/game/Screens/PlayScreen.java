@@ -33,6 +33,7 @@ import com.mygdx.game.Sprites.Enemy;
 import com.mygdx.game.Sprites.Player;
 import com.mygdx.game.Sprites.SimpleEnemy;
 import com.mygdx.game.Tools.B2WorldCreater;
+import com.mygdx.game.Tools.GameWorldRender;
 
 
 /* This class - element of GameState. It`s first level of the game */
@@ -40,19 +41,20 @@ import com.mygdx.game.Tools.B2WorldCreater;
 public class PlayScreen extends GameState {
 
     private MyGdxGame game;
-    Texture texture;
     private OrthographicCamera gameCam;
     private Viewport gamePort;
     private Hud hud;
     private TmxMapLoader mapLoader; // for downloading tiles
     private TiledMap map;
     private OrthogonalTiledMapRenderer render;
+    private OrthographicCamera mapCam;
     private World world;
     private Box2DDebugRenderer b2dr;
     private Player player;
     private Enemy enemy;
     private Texture img;
     private SpriteBatch batch;
+    private GameWorldRender gameWorldRender; // для отрисовки карты
 
     // light sky
     private PointLight light;
@@ -67,18 +69,18 @@ public class PlayScreen extends GameState {
         img = new Texture(Gdx.files.internal("sprites/player/stay/hero_stay.png"));
 
         // настройка ортографической камеры
-
-
-        gameCam = new OrthographicCamera(MyGdxGame.V_WIDTH / MyGdxGame.PPM * 2, MyGdxGame.V_HEIGHT / MyGdxGame.PPM * 2);
+        gameCam = new OrthographicCamera((MyGdxGame.V_WIDTH / MyGdxGame.PPM) * 2, (MyGdxGame.V_HEIGHT / MyGdxGame.PPM) * 2);
         // gamePort = new FitViewport(
         // MyGdxGame.V_WIDTH / MyGdxGame.PPM,
         //  MyGdxGame.V_HEIGHT / MyGdxGame.PPM, gameCam);
         // hud = new Hud(game.batch);
 
+
         // load map
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("maps/SpaceShipLevel.tmx");
-        render = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
+        gameWorldRender = new GameWorldRender(map, 1 / MyGdxGame.PPM);
+        //render = new OrthogonalTiledMapRenderer(map, 1 / MyGdxGame.PPM);
 
 
         // для рисования
@@ -100,9 +102,12 @@ public class PlayScreen extends GameState {
         // make light
         rayHandlerh = new RayHandler(world);
         rayHandlerh.setAmbientLight(.5f);
-        light = new PointLight(rayHandlerh, 1000, Color.PURPLE, 1f, 10, 10); // light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
+        light = new PointLight(rayHandlerh, 1000, Color.PURPLE, 0.5f, 10, 10); // light = new PointLight(rayHandlerh, 45, Color.ORANGE, 1.6f, 10, 10);
         // light.attachToBody(player.getB2body());
         light.setXray(false);
+
+        flashLight = new PointLight(rayHandlerh, 200, Color.DARK_GRAY, 1f, 10, 10);
+        flashLight.setXray(false);
 
 
     }
@@ -136,7 +141,7 @@ public class PlayScreen extends GameState {
             player.setMoveRight(true);
             player.setMoveleft(false);
             player.setStay(false);
-          //  gameCam.translate(5 / MyGdxGame.PPM, 0, 0);
+            //  gameCam.translate(5 / MyGdxGame.PPM, 0, 0);
         }
         // turn left
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
@@ -146,7 +151,7 @@ public class PlayScreen extends GameState {
             player.setMoveRight(false);
             player.setMoveleft(true);
             player.setStay(false);
-           // gameCam.translate(-5 / MyGdxGame.PPM, 0, 0);
+            // gameCam.translate(-5 / MyGdxGame.PPM, 0, 0);
         }
 
         // escape button - game on pause
@@ -172,11 +177,12 @@ public class PlayScreen extends GameState {
         //  gameCam.position.x = player.b2body.getPosition().x;
 
 
-
         // обновление и рендеринг света
         rayHandlerh.updateAndRender();
         light.setXray(false);
-        light.setPosition((player.b2body.getPosition().x - player.getWidth() / 2), (player.b2body.getPosition().y - player.getHeight() / 2)); // свет"следует" за игроком
+        light.setPosition((player.b2body.getPosition().x - player.getWidth() / 2), (player.b2body.getPosition().y - player.getHeight() / 2) + 10 / MyGdxGame.PPM); // свет"следует" за игроком
+
+        flashLight.setPosition(50 / MyGdxGame.PPM, 200 / MyGdxGame.PPM);
 
         // обновление позиции игрока и проч.
         player.update(dt);
@@ -203,16 +209,14 @@ public class PlayScreen extends GameState {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
+        // обновление глав. игровой камеры
         gameCam.position.x = player.b2body.getPosition().x;
         gameCam.update();
         batch.setProjectionMatrix(gameCam.combined);
-        render.setView(gameCam);
-
-
+        
         // render game map
-        render.render();
-        render.setView(gameCam);
+        gameWorldRender.getMapRender().setView(gameCam);
+        gameWorldRender.render(delta);
 
 
         // render box2dbodies - сделано для отладки Fixtures!
@@ -221,7 +225,7 @@ public class PlayScreen extends GameState {
 
         // set batch to draw camera
 //        hud.stage.draw();
-       // текстура игрока
+        // текстура игрока
         //batch.setProjectionMatrix(gameCam.combined);
         batch.begin();
         player.render(batch, delta);

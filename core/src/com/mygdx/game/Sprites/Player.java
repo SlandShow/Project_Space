@@ -129,9 +129,6 @@ public class Player extends Sprite {
         stayAnimation = new Animation(0.3f, stayFrames);
 
 
-
-
-
     }
 
     public void render(SpriteBatch batch, float dt) {
@@ -141,23 +138,23 @@ public class Player extends Sprite {
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
             //currentFrame.flip(true, false);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM   ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (isJump) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 0.8f  ), getY() - 0.8f , 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 0.8f), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         System.out.println(moveleft + " " + moveRight + " " + stay);
@@ -170,7 +167,7 @@ public class Player extends Sprite {
 
 
     public void update(float dt) {
-        setPosition((b2body.getPosition().x - getWidth() / 2)  , (b2body.getPosition().y - getHeight() / 2) );
+        setPosition((b2body.getPosition().x - getWidth() / 2), (b2body.getPosition().y - getHeight() / 2));
 
     }
 

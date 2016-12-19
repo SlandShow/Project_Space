@@ -34,6 +34,7 @@ import com.mygdx.game.Sprites.Player;
 import com.mygdx.game.Sprites.SimpleEnemy;
 import com.mygdx.game.Tools.B2WorldCreater;
 import com.mygdx.game.Tools.GameWorldRender;
+import com.mygdx.game.Tools.WorldContactListener;
 
 
 /* This class - element of GameState. It`s first level of the game */
@@ -109,12 +110,11 @@ public class PlayScreen extends GameState {
         flashLight = new PointLight(rayHandlerh, 200, Color.DARK_GRAY, 1f, 10, 10);
         flashLight.setXray(false);
 
+        // закрепляем обработчик коллизий на мир 1-го уровня
+        world.setContactListener(new WorldContactListener());
 
     }
 
-    // public TextureAtlas getAtlas() {
-    //return atlas;
-    //}
 
     @Override
     public void handleInput(float dt) {
@@ -213,7 +213,7 @@ public class PlayScreen extends GameState {
         gameCam.position.x = player.b2body.getPosition().x;
         gameCam.update();
         batch.setProjectionMatrix(gameCam.combined);
-        
+
         // render game map
         gameWorldRender.getMapRender().setView(gameCam);
         gameWorldRender.render(delta);

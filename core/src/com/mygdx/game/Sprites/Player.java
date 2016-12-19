@@ -102,6 +102,15 @@ public class Player extends Sprite {
         fdef.shape = poly;
         b2body.createFixture(fdef);
 
+
+        // создаем сенсер для игрока (система обработки коллизий)
+        EdgeShape head = new EdgeShape();
+        head.set(new Vector2(-2 / MyGdxGame.PPM, 28 / MyGdxGame.PPM),
+                new Vector2(2 / MyGdxGame.PPM, 28 / MyGdxGame.PPM));
+        fdef.shape = head;
+        fdef.isSensor = true;
+        b2body.createFixture(fdef).setUserData("head");
+
         // инициализация спрайтовой анимации
         walkSheet = new Texture(Gdx.files.internal("sprites/player/walk/Hero2.png"));
         TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);
@@ -128,7 +137,6 @@ public class Player extends Sprite {
 
         stayAnimation = new Animation(0.3f, stayFrames);
 
-
     }
 
     public void render(SpriteBatch batch, float dt) {
@@ -138,7 +146,7 @@ public class Player extends Sprite {
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+           // batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveRight) {
@@ -148,7 +156,7 @@ public class Player extends Sprite {
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            //currentFrame.flip(true, false);
+            currentFrame.flip(true, false);
             batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 

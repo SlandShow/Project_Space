@@ -211,6 +211,7 @@ public class PlayScreen extends GameState {
 
         // обновление глав. игровой камеры
         gameCam.position.x = player.b2body.getPosition().x;
+        gameCam.position.y = player.b2body.getPosition().y / 2;
         gameCam.update();
         batch.setProjectionMatrix(gameCam.combined);
 

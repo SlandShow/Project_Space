@@ -37,4 +37,8 @@ public class WorldContactListener implements ContactListener {
     public static boolean checkRectangleCollision(Rectangle s1, Rectangle s2, Rectangle s3) {
         return Intersector.intersectRectangles(s1, s2, s3);
     }
+
+    public static boolean checkRectangleCollision(Rectangle r1, Rectangle r2) {
+        return Intersector.overlaps(r1, r2);
+    }
 }

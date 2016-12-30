@@ -18,6 +18,8 @@ public class SimpleEnemy extends Enemy {
     Body body;
     FixtureDef fdef;
     public Vector2 velocity;
+    public static final int DAMAGE = 10;
+
 
     public SimpleEnemy(World world, BodyDef bdef, PolygonShape shape, Rectangle rect, FixtureDef fdef) {
         super(world);
@@ -32,6 +34,9 @@ public class SimpleEnemy extends Enemy {
     @Override
     public void defineEnemy() {
 
+        // урон при коллизии с врагом
+        damage = 10;
+
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.position.set(
                 (rect.getX() + rect.getWidth() / 2) / MyGdxGame.PPM,
@@ -40,7 +45,7 @@ public class SimpleEnemy extends Enemy {
 
         shape.setAsBox(rect.getWidth() / 2 / MyGdxGame.PPM, rect.getHeight() / 2 / MyGdxGame.PPM);
         fdef.shape = shape;
-        body.createFixture(fdef).setUserData("enemy");
+        body.createFixture(fdef).setUserData("simple enemy");
 
 
     }

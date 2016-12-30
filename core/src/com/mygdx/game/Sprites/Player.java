@@ -2,16 +2,18 @@ package com.mygdx.game.Sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.g3d.particles.values.MeshSpawnShapeValue;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Screens.PlayScreen;
+import com.mygdx.game.Tools.B2WorldCreater;
+import com.mygdx.game.Tools.WorldContactListener;
 
 public class Player extends Sprite {
+
 
     public enum State {
         NONE, WALK, DEAD, JUMPING
@@ -43,6 +45,17 @@ public class Player extends Sprite {
     private Vector2 position;
     private boolean isJump;
     private boolean stay;
+
+    // для реализации сенсера
+    protected Fixture fixture;
+    private Rectangle rect;
+
+
+    // для системы XP
+    private int hp;
+    private BitmapFont font;
+    private boolean isAlive;
+
 
     public Vector2 getVelocity() {
         return velocity;
@@ -93,23 +106,27 @@ public class Player extends Sprite {
         b2body.createFixture(fdef);
 
         // часть 2
-        bdef.position.set(100 / MyGdxGame.PPM, 190 / MyGdxGame.PPM);
+
+        rect = new Rectangle();
+        rect.setPosition(100 / MyGdxGame.PPM, 190 / MyGdxGame.PPM);
+
+        bdef.position.set(rect.getX(), rect.getY());
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
         PolygonShape poly = new PolygonShape();
         poly.setAsBox(18 / MyGdxGame.PPM, 25 / MyGdxGame.PPM);
         fdef.shape = poly;
-        b2body.createFixture(fdef);
+        b2body.createFixture(fdef).setUserData("player");
 
 
         // создаем сенсер для игрока (система обработки коллизий)
-        EdgeShape head = new EdgeShape();
-        head.set(new Vector2(-2 / MyGdxGame.PPM, 28 / MyGdxGame.PPM),
-                new Vector2(2 / MyGdxGame.PPM, 28 / MyGdxGame.PPM));
+        /*EdgeShape head = new EdgeShape();
+        head.set(new Vector2(-3 / MyGdxGame.PPM, -10 / MyGdxGame.PPM),
+                new Vector2(35 / MyGdxGame.PPM, -10 / MyGdxGame.PPM));
         fdef.shape = head;
         fdef.isSensor = true;
-        b2body.createFixture(fdef).setUserData("head");
+        b2body.createFixture(fdef).setUserData("head");*/
 
         // инициализация спрайтовой анимации
         walkSheet = new Texture(Gdx.files.internal("sprites/player/walk/Hero2.png"));
@@ -137,6 +154,11 @@ public class Player extends Sprite {
 
         stayAnimation = new Animation(0.3f, stayFrames);
 
+        // HP система
+        hp = 100;
+        isAlive = true;
+
+
     }
 
     public void render(SpriteBatch batch, float dt) {
@@ -146,7 +168,7 @@ public class Player extends Sprite {
 
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-           // batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
         if (moveRight) {
@@ -156,7 +178,6 @@ public class Player extends Sprite {
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            currentFrame.flip(true, false);
             batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
@@ -165,7 +186,8 @@ public class Player extends Sprite {
             batch.draw(currentFrame, (getX() - 0.8f), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
         }
 
-        System.out.println(moveleft + " " + moveRight + " " + stay);
+        // Система HP
+
 
     }
 
@@ -173,10 +195,26 @@ public class Player extends Sprite {
         return currentFrame;
     }
 
+    public void hit(int damage) {
+        hp -= damage;
+    }
+
+    private void checkLive() {
+        if (hp <= 0) isAlive = false;
+        if (!isAlive) System.exit(-1); // TODO: СДЕЛАТЬ ЭКРАН ПЕРЕЗАПУСКА ИГРЫ
+    }
+
+
+    public int getHp() {
+        return hp;
+    }
+
 
     public void update(float dt) {
+        // для корректной отрисовки текстуры
         setPosition((b2body.getPosition().x - getWidth() / 2), (b2body.getPosition().y - getHeight() / 2));
-
+        // проверка HP игрока
+        checkLive();
     }
 
     public void setJump(boolean b) {

@@ -13,6 +13,8 @@ public abstract class Enemy extends Sprite {
     World world;
     Body b2body;
 
+    protected int damage;
+
 
     public Enemy(World world) {
         this.world = world;
@@ -30,4 +32,8 @@ public abstract class Enemy extends Sprite {
     }
 
     public abstract void update(float dt);
+
+    public int getDamage() {
+        return damage;
+    }
 }

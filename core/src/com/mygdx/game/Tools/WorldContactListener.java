@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.*;
+import com.mygdx.game.Sprites.Player;
+import com.mygdx.game.Sprites.SimpleEnemy;
 
 
 /**
@@ -11,8 +13,32 @@ import com.badlogic.gdx.physics.box2d.*;
  */
 public class WorldContactListener implements ContactListener {
 
+    private Player player;
+
+    public WorldContactListener(Player player) {
+        this.player = player;
+}
+
     @Override
     public void beginContact(Contact contact) {
+        // мониторинг с помощью логов
+        Fixture fixA = contact.getFixtureA();
+        Fixture fixB = contact.getFixtureB();
+
+        if (fixA.getUserData() != null && fixB.getUserData() != null) {
+            Gdx.app.log("Collision ", fixA.getUserData().toString());
+            Gdx.app.log("Collision ", fixB.getUserData().toString());
+
+            if (fixA.getUserData().equals("simple enemy") || fixB.getUserData().equals("simple enemy")) player.hit(SimpleEnemy.DAMAGE);
+
+        }
+
+
+
+    }
+
+    @Override
+    public void endContact(Contact contact) {
         // мониторинг с помощью логов
         Fixture fixA = contact.getFixtureA();
         Fixture fixB = contact.getFixtureB();
@@ -23,27 +49,11 @@ public class WorldContactListener implements ContactListener {
         if (fixB != null && fixB.getUserData() == "enemy")
             Gdx.app.log("Warming!", fixB.getUserData().toString());
 
-        if (contact.getFixtureA().getUserData() != null)
-            Gdx.app.log("Start", "" + contact.getFixtureA().getUserData());
-        if (contact.getFixtureB().getUserData() != null)
-            Gdx.app.log("Start", "" + contact.getFixtureB().getUserData());
-
-
-    }
-
-    @Override
-    public void endContact(Contact contact) {
-        // мониторинг с помощью логов
-        // if (contact.getFixtureA().getUserData() != null)
-        // Gdx.app.log("Start", "" + contact.getFixtureA().getUserData());
-        // if (contact.getFixtureB().getUserData() != null)
-        //Gdx.app.log("Start", "" + contact.getFixtureB().getUserData());
-
     }
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-       
+
 
     }
 

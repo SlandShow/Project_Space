@@ -18,14 +18,14 @@ public class GameBullets {
     private Texture img;
 
     public GameBullets(float x, float y) {
-        this.x = x;
+        this.x = x - 50 / MyGdxGame.PPM;
         this.y = y;
         speed = 100 / MyGdxGame.PPM;
         img = new Texture("huds/blastt.png");
     }
 
     public void draw(SpriteBatch batch) {
-        batch.draw(img, x, y, 50 / MyGdxGame.PPM, 50 / MyGdxGame.PPM);
+        batch.draw(img, x, y, 10 / MyGdxGame.PPM, 10 / MyGdxGame.PPM);
     }
 
     public void update() {

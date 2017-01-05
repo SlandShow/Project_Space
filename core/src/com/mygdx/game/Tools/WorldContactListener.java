@@ -29,7 +29,11 @@ public class WorldContactListener implements ContactListener {
             Gdx.app.log("Collision ", fixA.getUserData().toString());
             Gdx.app.log("Collision ", fixB.getUserData().toString());
 
+            // обработка коллизии игрока с врагом
             if (fixA.getUserData().equals("simple enemy") || fixB.getUserData().equals("simple enemy")) player.hit(SimpleEnemy.DAMAGE);
+
+            if (fixA.getUserData().equals("bullet") || fixB.getUserData().equals("bullet"))
+                Gdx.app.log("Collision", "with bullets");
 
         }
 
@@ -43,11 +47,7 @@ public class WorldContactListener implements ContactListener {
         Fixture fixA = contact.getFixtureA();
         Fixture fixB = contact.getFixtureB();
 
-        if (fixA != null && fixA.getUserData() == "enemy")
-            Gdx.app.log("Warming!", fixA.getUserData().toString());
 
-        if (fixB != null && fixB.getUserData() == "enemy")
-            Gdx.app.log("Warming!", fixB.getUserData().toString());
 
     }
 

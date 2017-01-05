@@ -1,16 +1,24 @@
 package com.mygdx.game.Sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g3d.particles.values.MeshSpawnShapeValue;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.mygdx.game.BulletsResurses.Box2DBullets;
+import com.mygdx.game.BulletsResurses.GameBullets;
+import com.mygdx.game.GameLogic.GameLoader;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Screens.MenuPauseScene;
 import com.mygdx.game.Screens.PlayScreen;
 import com.mygdx.game.Tools.B2WorldCreater;
 import com.mygdx.game.Tools.WorldContactListener;
+
+import java.util.ArrayList;
 
 public class Player extends Sprite {
 
@@ -19,9 +27,16 @@ public class Player extends Sprite {
         NONE, WALK, DEAD, JUMPING
     }
 
+    // основа для использования движка Box2D
+    private B2WorldCreater creater;
+
+    // для физики
     public World world;
     public Body b2body;
     private SpriteBatch batch;
+    private BodyDef bdef;
+    private FixtureDef fdef;
+
 
     // для анимации
     int FRAME_COLS = 2;
@@ -50,11 +65,16 @@ public class Player extends Sprite {
     protected Fixture fixture;
     private Rectangle rect;
 
-
     // для системы XP
     private int hp;
     private BitmapFont font;
     private boolean isAlive;
+    private Texture hp_texture;
+
+    // пули
+    public ArrayList<GameBullets> bullets = new ArrayList<GameBullets>();
+    public static ArrayList<Box2DBullets> bullets_list = new ArrayList<Box2DBullets>();
+    private boolean shoot;
 
 
     public Vector2 getVelocity() {
@@ -77,7 +97,8 @@ public class Player extends Sprite {
         this.moveleft = moveleft;
     }
 
-    public Player(World world, PlayScreen screen) {
+    public Player(World world, PlayScreen screen, B2WorldCreater creater) {
+        this.creater = creater;
         this.world = world;
         definePlayer();
     }
@@ -93,12 +114,12 @@ public class Player extends Sprite {
         // структура игрока на основе движка BOX2D
 
         // часть 1
-        BodyDef bdef = new BodyDef();
+        bdef = new BodyDef();
         bdef.position.set(80 / MyGdxGame.PPM, 200 / MyGdxGame.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
-        FixtureDef fdef = new FixtureDef();
+        fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
         shape.setRadius(25 / MyGdxGame.PPM);
 
@@ -115,7 +136,7 @@ public class Player extends Sprite {
         b2body = world.createBody(bdef);
 
         PolygonShape poly = new PolygonShape();
-        poly.setAsBox(18 / MyGdxGame.PPM, 25 / MyGdxGame.PPM);
+        poly.setAsBox(5 / MyGdxGame.PPM, 5 / MyGdxGame.PPM);
         fdef.shape = poly;
         b2body.createFixture(fdef).setUserData("player");
 
@@ -157,15 +178,69 @@ public class Player extends Sprite {
         // HP система
         hp = 100;
         isAlive = true;
+        hp_texture = new Texture("huds/heart.png");
+        font = new BitmapFont();
 
 
     }
+
+
+    public void handleInput(float dt) {
+        // do nothing
+        setStay(true);
+        setMoveleft(false);
+        setMoveRight(false);
+        setJump(false);
+
+        // jumping
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+            b2body.applyLinearImpulse(new Vector2(0, 4f), b2body.getWorldCenter(), true);
+            setJump(true);
+            setStay(false);
+
+            //light.setPosition( player.b2body.getLinearVelocity().x , player.b2body.getLinearVelocity().y );
+        }
+        // turn right
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) &&
+                b2body.getLinearVelocity().x <= 2) {
+            b2body.applyLinearImpulse(new Vector2(0.1f, 0), b2body.getWorldCenter(), true);
+            // player.getVelocity().x += Player.SPEED;
+            setMoveRight(true);
+            setMoveleft(false);
+            setStay(false);
+            //  gameCam.translate(5 / MyGdxGame.PPM, 0, 0);
+        }
+        // turn left
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) &&
+                b2body.getLinearVelocity().x >= -2) {
+            b2body.applyLinearImpulse(new Vector2(-0.1f, 0), b2body.getWorldCenter(), true);
+            //player.getVelocity().x =- Player.SPEED;
+            setMoveRight(false);
+            setMoveleft(true);
+            setStay(false);
+            // gameCam.translate(-5 / MyGdxGame.PPM, 0, 0);
+        }
+
+        // escape button - game on pause
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            GameLoader.currentIndex = GameLoader.MENU_PAUSE_STATE;
+            GameLoader.gameLoader.addState(new MenuPauseScene());
+            GameLoader.gameLoader.setNewState();
+        }
+
+        // стрельба
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            shoot = true;
+        }
+    }
+
 
     public void render(SpriteBatch batch, float dt) {
 
         // анимация
         stateTime += Gdx.graphics.getDeltaTime();
 
+        // движение
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
             batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
@@ -174,11 +249,23 @@ public class Player extends Sprite {
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
             batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+
+            // поворот для пуль
+            for (Box2DBullets bullet : bullets_list) {
+                bullet.setBulletTurnRight(true);
+                bullet.setBulletTurnLeft(false);
+            }
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
             batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+
+            // поворот для пуль
+            for (Box2DBullets bullet : bullets_list) {
+                bullet.setBulletTurnRight(false);
+                bullet.setBulletTurnLeft(true);
+            }
         }
 
         if (isJump) {
@@ -187,6 +274,18 @@ public class Player extends Sprite {
         }
 
         // Система HP
+        batch.draw(hp_texture, b2body.getPosition().x - 1, b2body.getPosition().y + 1, 50 / MyGdxGame.PPM, 50 / MyGdxGame.PPM);
+        // font.draw(batch, "Player HP: " + hp, b2body.getPosition().x / MyGdxGame.PPM, b2body.getPosition().y, 0, 0, true);
+        for (GameBullets bull : bullets) {
+            bull.update();
+            bull.draw(batch);
+        }
+
+        // стрельба
+        if (shoot) {
+            bullets_list.add(new Box2DBullets(creater, b2body.getPosition().x, b2body.getPosition().y));
+            shoot = false;
+        }
 
 
     }
@@ -215,6 +314,12 @@ public class Player extends Sprite {
         setPosition((b2body.getPosition().x - getWidth() / 2), (b2body.getPosition().y - getHeight() / 2));
         // проверка HP игрока
         checkLive();
+
+        // обновление пуль
+        for (Box2DBullets bullet : bullets_list) {
+            bullet.update(dt);
+        }
+
     }
 
     public void setJump(boolean b) {

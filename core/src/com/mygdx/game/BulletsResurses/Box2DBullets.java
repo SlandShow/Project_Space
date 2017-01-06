@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Sprites.Player;
 import com.mygdx.game.Tools.B2WorldCreater;
 
 /**
@@ -28,16 +29,9 @@ public class Box2DBullets extends Sprite {
     private boolean bulletTurnLeft;
     private boolean bulletTurnRight;
     private boolean checkTurning;
-    private boolean factingLeft;
-    private boolean factingRight;
+    private float leftDeltaTurning;
+    private float rightDeltaTurning;
 
-    public void setFactingLeft(boolean factingLeft) {
-        this.factingLeft = factingLeft;
-    }
-
-    public void setFactingRight(boolean factingRight) {
-        this.factingRight = factingRight;
-    }
 
     public Box2DBullets(B2WorldCreater creater, float x, float y) {
         this.world = creater.getWorld();
@@ -45,9 +39,9 @@ public class Box2DBullets extends Sprite {
         this.shape = creater.getShape();
         this.fdef = creater.getFdef();
         this.b2body = creater.getBody();
-        this.x = x ;
-        this.y = y + 20 / MyGdxGame.PPM;
-        velocity_x = 5f;
+        this.x = x;
+        this.y = y;
+        velocity_x = 10f;
         velocity_y = 400f;
         checkTurning = false;
         defineBullet();
@@ -81,30 +75,47 @@ public class Box2DBullets extends Sprite {
         bdef.bullet = true;
         b2body.setGravityScale(0);
         b2body.createFixture(fdef).setUserData("bullet");
-        factingRight = false; // по умолчанию
 
+        // Определяем смещение пули от Body в ту, или иную сторону
+        leftDeltaTurning = -20f / MyGdxGame.PPM;
+        rightDeltaTurning = 20f / MyGdxGame.PPM;
 
     }
 
     public void update(float dt) {
-
+        // Единожды определяем будущее направление для каждой пули
         if (checkTurning == false) {
-            b2body.applyLinearImpulse(new Vector2(velocity_x, 0), b2body.getWorldCenter(), true);
-            if (factingRight) b2body.applyLinearImpulse(new Vector2(velocity_x, 0), b2body.getWorldCenter(), true);
-            if (factingLeft) b2body.applyLinearImpulse(new Vector2(-velocity_x, 0), b2body.getWorldCenter(), true);
+
+            // Перед импульсом у пули корректируем ее координаты (чтобы она вылетала из бластера, а не из самого игрока)
+            changeVecPosition(Player.PLAYER_STATE);
+
+            if (Player.PLAYER_STATE == Player.State.FACTING_RIGHT)
+                b2body.applyLinearImpulse(new Vector2(velocity_x, 0), b2body.getWorldCenter(), true);
+            if (Player.PLAYER_STATE == Player.State.FACTING_LEFT)
+                b2body.applyLinearImpulse(new Vector2(-velocity_x, 0), b2body.getWorldCenter(), true);
             checkTurning = true;
         }
 
 
+    }
 
+    private void changeVecPosition(Player.State bulletState) {
+        switch (bulletState) {
+            case FACTING_RIGHT:
+                x += rightDeltaTurning;
+                break;
+            case FACTING_LEFT:
+                x += leftDeltaTurning;
+                break;
+        }
+
+        // обновление позиции фикстуры пули
+        b2body.getPosition().set(x, y);
     }
 
     public void kill() {
         world.destroyBody(b2body);
     }
-
-
-
 
 
 }

@@ -24,7 +24,7 @@ public class Player extends Sprite {
 
 
     public enum State {
-        NONE, WALK, DEAD, JUMPING
+        NONE, WALK, DEAD, JUMPING, FACTING_LEFT, FACTING_RIGHT
     }
 
     // основа для использования движка Box2D
@@ -75,6 +75,7 @@ public class Player extends Sprite {
     public ArrayList<GameBullets> bullets = new ArrayList<GameBullets>();
     public static ArrayList<Box2DBullets> bullets_list = new ArrayList<Box2DBullets>();
     private boolean shoot;
+    public static State PLAYER_STATE;
 
 
     public Vector2 getVelocity() {
@@ -100,6 +101,7 @@ public class Player extends Sprite {
     public Player(World world, PlayScreen screen, B2WorldCreater creater) {
         this.creater = creater;
         this.world = world;
+        PLAYER_STATE = State.FACTING_RIGHT; // по умолчянию игрок стоит и смотрит направо
         definePlayer();
     }
 
@@ -136,7 +138,7 @@ public class Player extends Sprite {
         b2body = world.createBody(bdef);
 
         PolygonShape poly = new PolygonShape();
-        poly.setAsBox(5 / MyGdxGame.PPM, 5 / MyGdxGame.PPM);
+        poly.setAsBox(8 / MyGdxGame.PPM, 8 / MyGdxGame.PPM);
         fdef.shape = poly;
         b2body.createFixture(fdef).setUserData("player");
 
@@ -243,34 +245,40 @@ public class Player extends Sprite {
         // движение
         if (stay) {
             currentFrame = stayAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 22 / MyGdxGame.PPM ), getY() - 25 / MyGdxGame.PPM, 50f / MyGdxGame.PPM, 50f / MyGdxGame.PPM);
         }
 
         if (moveRight) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 30 / MyGdxGame.PPM ), getY() - 30 / MyGdxGame.PPM, 70f / MyGdxGame.PPM, 70f / MyGdxGame.PPM);
+
+            PLAYER_STATE = State.FACTING_RIGHT;
 
             // поворот для пуль
             for (Box2DBullets bullet : bullets_list) {
                 bullet.setBulletTurnRight(true);
                 bullet.setBulletTurnLeft(false);
+                System.out.println(bullet.getBulletTurnLeft() + " " + bullet.getBulletTurnRight());
             }
         }
 
         if (moveleft) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 87 / MyGdxGame.PPM), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 30 / MyGdxGame.PPM ), getY() - 30 / MyGdxGame.PPM, 70f / MyGdxGame.PPM, 70f / MyGdxGame.PPM);
+
+            PLAYER_STATE = State.FACTING_LEFT;
 
             // поворот для пуль
             for (Box2DBullets bullet : bullets_list) {
                 bullet.setBulletTurnRight(false);
                 bullet.setBulletTurnLeft(true);
+                System.out.println(bullet.getBulletTurnLeft() + " " + bullet.getBulletTurnRight());
             }
         }
 
         if (isJump) {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, (getX() - 0.8f), getY() - 0.8f, 180f / MyGdxGame.PPM, 180f / MyGdxGame.PPM);
+            batch.draw(currentFrame, (getX() - 30 / MyGdxGame.PPM ), getY() - 30 / MyGdxGame.PPM, 70f / MyGdxGame.PPM, 70f / MyGdxGame.PPM);
         }
 
         // Система HP
@@ -300,7 +308,7 @@ public class Player extends Sprite {
 
     private void checkLive() {
         if (hp <= 0) isAlive = false;
-        if (!isAlive) System.exit(-1); // TODO: СДЕЛАТЬ ЭКРАН ПЕРЕЗАПУСКА ИГРЫ
+        if (!isAlive) ; // TODO: СДЕЛАТЬ ЭКРАН ПЕРЕЗАПУСКА ИГРЫ
     }
 
 
